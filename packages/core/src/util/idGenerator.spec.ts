@@ -1,4 +1,4 @@
-import { createIdGenerator } from "./createId";
+import { createIdGenerator } from "./idGenerator";
 
 it("On first call, returns string formatted in `{prefix}-0`", () => {
   const createId = createIdGenerator("id");

@@ -1,4 +1,4 @@
-import { createIdGenerator } from "./util/createId";
+import { createIdGenerator } from "./util/idGenerator";
 
 interface Point {
   x: number;
@@ -21,7 +21,7 @@ export type BindType =
 
 const createPostId = createIdGenerator("post");
 
-class Post implements Line {
+export class Post implements Line {
   readonly id: string;
   public bindType: BindType;
   public boundBy?: Post[];

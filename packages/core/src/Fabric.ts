@@ -1,6 +1,6 @@
-import { Stitch } from "./Stitch";
+import { Post, Stitch } from "./Stitch";
 import { Point } from "./type";
-import { createIdGenerator } from "./util/createId";
+import { createIdGenerator } from "./util/idGenerator";
 
 const createFabricId = createIdGenerator("fabric");
 
@@ -39,5 +39,39 @@ export class Fabric {
     secondLastStitch.next = undefined;
     this.stitches.delete(this._lastStitchId);
     this._lastStitchId = secondLastStitch.id;
+  }
+
+  toJson() {
+    return [...this.stitches.values()].map(({ id, end, prev, posts }) => ({
+      id,
+      pos: end,
+      prev: prev?.id,
+      posts: posts.map(({ id, type, bindType, boundTo }) => ({
+        id,
+        type,
+        bindType,
+        boundTo: boundTo.id,
+      })),
+    }));
+  }
+
+  toGeometryJson() {
+    const stitches: Pick<Stitch, "start" | "end">[] = [];
+    const unflatPosts: Pick<Post, "type" | "bindType" | "start" | "end">[][] =
+      [];
+
+    [...this.stitches.values()].forEach(({ start, end, posts }) => {
+      stitches.push({ start, end });
+      unflatPosts.push(
+        posts.map(({ type, bindType, start, end }) => ({
+          start,
+          end,
+          type,
+          bindType,
+        }))
+      );
+    });
+
+    return { stitches, posts: unflatPosts.flat() };
   }
 }
