@@ -5,7 +5,6 @@
 ## Packages
 
 - `yarnicate/core`
-- `yarnicate/renderer`
 - `yarnicate/service`
 
 ## Milestones
