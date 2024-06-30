@@ -1,3 +1,5 @@
+import { createIdGenerator } from "./util/createId";
+
 interface Point {
   x: number;
   y: number;
@@ -17,15 +19,19 @@ export type BindType =
   | "front-post"
   | "back-post";
 
+const createPostId = createIdGenerator("post");
+
 class Post implements Line {
-  bindType: BindType;
-  boundBy?: Post[];
+  readonly id: string;
+  public bindType: BindType;
+  public boundBy?: Post[];
 
   constructor(
     readonly parent: Stitch,
     public boundTo: Post | Stitch,
     public type: PostType
   ) {
+    this.id = createPostId();
     this.bindType = "default";
   }
 
@@ -45,12 +51,16 @@ class Post implements Line {
   }
 }
 
+const createStitchId = createIdGenerator("stitch");
+
 export class Stitch implements Line {
-  next?: Stitch;
-  posts: Post[];
-  boundBy: Post[];
+  readonly id: string;
+  public next?: Stitch;
+  public posts: Post[];
+  public boundBy: Post[];
 
   constructor(public end: Point, public prev?: Stitch) {
+    this.id = createStitchId();
     this.posts = [];
     this.boundBy = [];
   }
