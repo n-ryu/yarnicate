@@ -29,10 +29,13 @@ export class Post implements Line {
   constructor(
     readonly parent: Stitch,
     public type: PostType,
-    public boundTo: Post | Stitch
+    public boundTo: Post | Stitch,
+    bindType?: BindType
   ) {
     this.id = createPostId();
-    this.bindType = "default";
+
+    if (!bindType) this.bindType = "default";
+    else this.bindType = bindType;
   }
 
   get start(): Point {
@@ -76,8 +79,8 @@ export class Stitch implements Line {
     };
   }
 
-  addPost(type: PostType, boundTo: Stitch | Post) {
-    const post = new Post(this, type, boundTo);
+  addPost(type: PostType, boundTo: Stitch | Post, bindType?: BindType) {
+    const post = new Post(this, type, boundTo, bindType);
 
     this.posts.push(post);
     boundTo.boundBy?.push(post);
