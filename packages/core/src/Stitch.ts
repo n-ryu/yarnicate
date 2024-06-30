@@ -28,8 +28,8 @@ class Post implements Line {
 
   constructor(
     readonly parent: Stitch,
-    public boundTo: Post | Stitch,
-    public type: PostType
+    public type: PostType,
+    public boundTo: Post | Stitch
   ) {
     this.id = createPostId();
     this.bindType = "default";
@@ -74,5 +74,14 @@ export class Stitch implements Line {
       x: (this.start.x + this.end.x) / 2,
       y: (this.start.y + this.end.y) / 2,
     };
+  }
+
+  addPost(type: PostType, boundTo: Stitch | Post) {
+    const post = new Post(this, type, boundTo);
+
+    this.posts.push(post);
+    boundTo.boundBy?.push(post);
+
+    return post;
   }
 }
