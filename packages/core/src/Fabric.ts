@@ -9,12 +9,41 @@ export class Fabric {
   readonly stitches: Map<string, Stitch>;
   private _lastStitchId: string;
 
-  constructor() {
+  constructor(data?: ReturnType<Fabric["toJson"]>) {
     this.id = createFabricId();
     this.stitches = new Map<string, Stitch>();
     this._lastStitchId = "";
 
-    this.addStitch({ x: 0, y: 0 });
+    if (!data) {
+      this.addStitch({ x: 0, y: 0 });
+      return;
+    }
+
+    const dataToStitch = new Map<string, Stitch>();
+
+    data.forEach((stitchData) => {
+      const stitch = new Stitch(stitchData.pos);
+      dataToStitch.set(stitchData.id, stitch);
+      this.stitches.set(stitch.id, stitch);
+    });
+
+    data.forEach((stitchData) => {
+      const stitch = dataToStitch.get(stitchData.id);
+      if (!stitch) return;
+
+      stitch.prev = dataToStitch.get(stitchData.prev ?? "");
+      stitch.next = dataToStitch.get(stitchData.next ?? "");
+
+      stitchData.posts.forEach((postData) => {
+        const boundTo = dataToStitch.get(postData.boundTo);
+        if (!boundTo) return;
+        stitch.addPost(postData.type, boundTo, postData.bindType);
+      });
+    });
+
+    this.stitches.forEach((stitch) => {
+      if (stitch.next === undefined) this._lastStitchId = stitch.id;
+    });
   }
 
   get lastStitch() {
@@ -56,39 +85,6 @@ export class Fabric {
         })),
       })
     );
-  }
-
-  static fromJson(stitches: ReturnType<Fabric["toJson"]>) {
-    const fabric = new Fabric();
-    const idMap = new Map<string, Stitch | Post>();
-
-    const iterateStitches = (
-      stitchJson: ReturnType<Fabric["toJson"]>[number]
-    ) => {
-      const stitch = fabric.addStitch(stitchJson.pos);
-      idMap.set(stitchJson.id, stitch);
-
-      stitchJson.posts.forEach((postJson) => {
-        const boundTo = idMap.get(postJson.boundTo);
-        if (!boundTo) throw new Error("invalid bind target");
-
-        const post = stitch.addPost(postJson.type, boundTo, postJson.bindType);
-        idMap.set(postJson.id, post);
-      });
-
-      const nextStitchJson = stitches.find(({ id }) => id === stitchJson.next);
-      if (nextStitchJson) iterateStitches(nextStitchJson);
-    };
-
-    const initialStitch = stitches.find((stitch) => stitch.prev === undefined);
-    if (!initialStitch || !fabric.lastStitch) return fabric;
-    idMap.set(initialStitch.id, fabric.lastStitch);
-
-    const secondStitch = stitches.find(({ id }) => id === initialStitch.next);
-    if (!secondStitch) return fabric;
-    iterateStitches(secondStitch);
-
-    return fabric;
   }
 
   toGeometryJson() {
